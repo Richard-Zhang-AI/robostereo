@@ -54,6 +54,7 @@ Scalable Embodied AI faces fundamental constraints due to prohibitive costs and 
 | `TTPA/` | Test-time policy augmentation branch | `TTPA/run_conda_vla_sync.sh`, `TTPA/run_docker_cosmos_sync.sh` |
 | `gs_head/` | RGB+XYZ to 3DGS reconstruction utility | `gs_head/scripts/*.py` |
 
+
 ## 📦 Environment Setup
 
 ### 1. Host Prerequisites
@@ -297,6 +298,20 @@ cd gs_head
 python scripts/gs_from_xyz_depth.py --dataset-dir ../datasets/bridge/videos/train/0 --device cuda
 python scripts/gs_from_xyz_video.py --dataset-dir ../datasets/bridge/videos/train/0 --device cuda
 ```
+
+
+## OEPL
+
+Open-Exploration Policy Learning covers the OpenVLA-based policy optimization branch used for autonomous exploration and self-correction. See [OEPL/README.md](OEPL/README.md) for details.
+
+## IEPL
+
+Imitative-Evolutionary Policy Learning covers the Cosmos-RFT post-training branch for learning from expert demonstrations with perceptual rewards. See [IEPL/README.md](IEPL/README.md) for details.
+
+## TTPA
+
+Test-Time Policy Augmentation covers the pre-execution verification and synchronized inference workflow. See [TTPA/README.md](TTPA/README.md) for details.
+
 
 ## 📚 Citation
 
