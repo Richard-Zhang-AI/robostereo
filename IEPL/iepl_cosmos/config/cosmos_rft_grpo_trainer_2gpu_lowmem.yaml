@@ -1,0 +1,59 @@
+# ============================================================
+# Cosmos RFT Low Memory Config - 2 GPUs only, minimal VRAM
+# ============================================================
+
+defaults:
+  - cosmos_rft_grpo_trainer
+
+# Data config - reduced batch sizes
+data:
+  n_samples: 2               # reduced from 4
+  train_batch_size: 4        # reduced from 16 (2 traj per initial state, 4 states)
+  val_batch_size: 4          # reduced from 16
+  rollout_batch_size: 8      # reduced from 32
+  num_workers: 2             # reduced from 4
+  prefetch_factor: 1         # reduced from 2
+
+# Actor config - smaller batch + offload
+actor_rollout_ref:
+  actor:
+    traj_mini_batch_size: 4  # reduced from 11
+    ppo_mini_batch_size: 16  # reduced from 64
+    ppo_micro_batch_size: 2  # reduced from 8
+    ppo_max_token_len_per_gpu: 8192  # reduced from 20480
+    fsdp_config:
+      param_offload: True    # enable param offload
+      grad_offload: True      # enable grad offload
+      optimizer_offload: False  # optimizer not offloaded (too slow)
+  
+  # Ref policy - maximize offload
+  ref:
+    log_prob_micro_batch_size: 8   # reduced from 32
+    fsdp_config:
+      param_offload: True
+  
+  # Rollout config - smaller batch
+  rollout:
+    micro_batch_size: 1      # reduced from 2
+    val_micro_batch_size: 2  # reduced from 8
+    gpu_memory_utilization: 0.7  # reduced from 0.9, more conservative
+    max_num_batched_tokens: 4096  # reduced from 8192
+    max_num_seqs: 512        # reduced from 1024
+    log_prob_micro_batch_size: 8  # reduced from 32
+
+# Critic config - smaller batch
+critic:
+  ppo_mini_batch_size: 16    # reduced from 64
+  ppo_micro_batch_size: 16   # reduced from 64
+  ppo_max_token_len_per_gpu: 16384  # reduced from 32768
+
+# Trainer config - 2 GPUs only
+trainer:
+  n_gpus_per_node: 2         # reduced from 8
+  nnodes: 1
+  generate_rpc_chunk_size: 4   # reduced from 16
+  train_generate_rpc_chunk_size: 4
+  val_generate_rpc_chunk_size: 4
+  rollout_generate_rpc_chunk_size: 4
+  generate_rpc_min_samples_per_rank: 1  # reduced from 2
+  wandb_mode: offline        # use offline first to reduce network overhead

@@ -1,0 +1,23 @@
+{
+  "env_vars": {
+    "NCCL_DEBUG": "WARN",
+    "MUJOCO_GL": "osmesa", 
+    "RAY_memory_monitor_refresh_ms": "0",
+    "VLLM_ATTENTION_BACKEND": "XFORMERS",
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True",
+    "TOKENIZERS_PARALLELISM": "true",
+    "WANDB_API_KEY": "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",
+    "RAY_RPC_KEEPALIVE_TIMEOUT_MS": "120000",
+    "RAY_RPC_KEEPALIVE_INTERVAL_MS": "20000",
+    "RAY_DEBUG": "0",
+    "RAY_DEBUG_POST_MORTEM": "0",
+    "VERL_PPO_LOGGING_LEVEL": "DEBUG",
+    "RAY_METRICS_EXPORT_PORT": "0",
+    "RAY_ENABLE_METRICS": "0",
+    "WMPO_MEM_DEBUG": "1",
+    "WMPO_MEM_DEBUG_EVERY": "1"
+  },
+  "excludes": [
+    "*"
+  ]
+}

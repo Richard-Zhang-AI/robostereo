@@ -1,0 +1,64 @@
+# VCS metadata
+.git/
+**/.git/
+
+# Local Python environments and editor state
+.venv/
+**/.venv/
+.vscode/
+**/.vscode/
+.claude/
+**/.claude/
+.cache/
+**/.cache/
+__pycache__/
+**/__pycache__/
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+*.py[cod]
+*.pyo
+*.egg-info/
+**/*.egg-info/
+
+# Local outputs, logs and temporary files
+/output/
+/outputs/
+/results/
+/tmp/
+/logs/
+/wandb/
+/ray_tmp/
+/OEPL/debug/
+/assets/outputs/
+/rewards/results/
+failed_tasks_log.txt
+*.log
+*.tmp
+*.swp
+
+# Datasets and checkpoints
+/checkpoints_files/
+/OEPL/checkpoint_files/
+/datasets/
+/openvla-oft/data/
+/openvla-oft/rollouts/
+
+# Large binary artifacts and local backups
+*.pt
+*.pth
+*.safetensors
+*.msgpack
+*.tar
+*.zip
+*.bak
+*.back.*
+*.git.bak
+*.wheel.bak
+
+# Local one-off files observed in this workspace
+/0
+/=0.4.0
+/=80.9.0
+/get-pip.py
+/libtransformer_engine.so.git.bak
+/libtransformer_engine.so.wheel.bak

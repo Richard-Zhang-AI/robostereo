@@ -1,0 +1,305 @@
+# ============================================================
+# IEPL (RoboStereo) - Cosmos + MimicGen GRPO Trainer Config
+# Adapted from VLA-RFT/OEPL.
+#
+# Compatible with ActorRolloutRefWorker + CosmosWorldModelWorker.
+# Uses StateDataset for MimicGen initial states.
+# ============================================================
+
+data:
+  tokenizer: null
+  task_suite_name: libero_10
+  task_name: coffee          # MimicGen task: coffee / square / stack_three / three_piece_assembly
+  state_path: null            # auto-resolved to ./verl/utils/dataset/{task_name}_d0_states.pkl if null
+  video_root: null            # MimicGen mp4 dataset root (e.g. /workspace/datasets/train_openvla/coffee_128)
+  num_trials_per_task: 50
+  n_samples: 4               # num imagined trajectories per initial state
+  filter_accuracy: False
+  accuracy_lower_bound: 0.0
+  accuracy_upper_bound: 1.0
+  oversample_factor: 1
+  train_batch_size: 16
+  val_batch_size: 16
+  rollout_batch_size: 32
+  max_prompt_length: 256
+  max_response_length: 128
+  filter_warmup: False
+  prompt_key: prompt
+  system_prompt: null
+  return_raw_input_ids: False
+  return_raw_chat: False
+  filter_truncated: False
+  filter_format: True
+  zero: False
+  sample_num: -1
+  reward_resize_hw: [224, 224]
+  lpips_every: 4
+  reward_mae_weight: 1.0
+  reward_lpips_weight: 1.0
+  num_workers: 4
+  prefetch_factor: 2
+  pin_memory: True
+
+actor_rollout_ref:
+  wm:
+    enable: True
+    backend: cosmos
+    cosmos_root: /workspace
+    cosmos_experiment: ac_reason_embeddings_rectified_flow_2b_256_320
+    cosmos_checkpoint_path: checkpoints_files/coffee_action_conditioned/checkpoints-RGB/model_ema_fp32.pt
+    cosmos_config_file: cosmos_predict2/_src/predict2/action/configs/action_conditioned/config.py
+    cosmos_action_chunk_size: 12
+    cosmos_action_scale: 20.0
+    cosmos_gripper_scale: 1.0
+    cosmos_resolution: '256,320'
+    cosmos_guidance: 0.0
+    cosmos_seed: 0
+    cosmos_negative_prompt_file: null          # e.g. /workspace/assets/action_conditioned/openvla-coffee/inference_params.json
+    cosmos_max_parallel_workers: 1
+    cosmos_gpu_allocation_mode: auto
+    use_normalized_actions: False
+    update_wm: False
+    reward_model_path: OEPL/checkpoint_files/reward_models/videomae_coffee.pth
+    rm_threshold: 0.1
+    rm_img_size: 224
+    rm_lr: 1e-4
+    rm_batch_size: 64
+    rm_val_batch_size: 512
+    rm_num_workers: 8
+    wm_training_steps_per_epoch: 10000
+    rm_training_steps_per_epoch: 10000
+  hybrid_engine: True
+  model:
+    vla: openvla-oft
+    action_token_len: 7
+    action_chunks_len: 8
+    path: OEPL/checkpoint_files/SFT_models/coffee
+    external_lib: null
+    override_config: {}
+    enable_gradient_checkpointing: False
+    use_remove_padding: False
+    lora_rank: 0
+    lora_alpha: 32
+    target_modules: all-linear
+  actor:
+    vla: ${actor_rollout_ref.model.vla}
+    action_token_len: ${actor_rollout_ref.model.action_token_len}
+    action_chunks_len: ${actor_rollout_ref.model.action_chunks_len}
+    strategy: fsdp
+    traj_mini_batch_size: 11
+    ppo_mini_batch_size: 64
+    ppo_micro_batch_size: 8
+    use_dynamic_bsz: False
+    use_remove_padding: ${actor_rollout_ref.model.use_remove_padding}
+    ppo_max_token_len_per_gpu: 20480
+    grad_clip: 1.0
+    clip_ratio: 0.2
+    clip_ratio_high: 0.28
+    clip_ratio_low: 0.2
+    clip_ratio_c: 3.0
+    loss_agg_mode: "token-mean"
+    entropy_coeff: 0.
+    use_kl_loss: False        # KL in reward via apply_kl_penalty; no KL in actor loss
+    use_mse_loss: False       # Cosmos uses token-gen, not flow-matching; no flow/gt_noisy_actions in batch
+    mse_loss_coef: 0.01
+    mse_kl_low: 0
+    mse_kl_high: 0.2
+    log_mse_loss: False
+    log_l1_loss: False
+    ppo_epochs: 1
+    shuffle: True
+    ulysses_sequence_parallel_size: 1
+    num_images_in_input: 1
+    optim:
+      lr: 5e-6
+      lr_warmup_steps_ratio: 0.
+      min_lr_ratio: null
+      warmup_style: constant
+      total_training_steps: -1
+    fsdp_config:
+      wrap_policy:
+        min_num_params: 0
+      param_offload: False
+      grad_offload: False
+      optimizer_offload: False
+      fsdp_size: -1
+  ref:
+    fsdp_config:
+      param_offload: True
+      wrap_policy:
+        min_num_params: 0
+      fsdp_size: -1
+    log_prob_micro_batch_size: 32
+    log_prob_use_dynamic_bsz: ${actor_rollout_ref.actor.use_dynamic_bsz}
+    log_prob_max_token_len_per_gpu: ${actor_rollout_ref.actor.ppo_max_token_len_per_gpu}
+    ulysses_sequence_parallel_size: ${actor_rollout_ref.actor.ulysses_sequence_parallel_size}
+  rollout:
+    vla: ${actor_rollout_ref.model.vla}
+    action_chunks_len: ${actor_rollout_ref.model.action_chunks_len}
+    experiment_name: null
+    unnorm_key: coffee_d0_300_demos           # override per task
+    micro_batch_size: 2
+    val_micro_batch_size: 8
+    model_family: openvla
+    task_suite_name: ${data.task_suite_name}
+    num_steps_wait: 10
+    pretrained_checkpoint: OEPL/checkpoint_files/SFT_models/coffee
+    center_crop: True
+    max_prompt_length: 512
+    num_images_in_input: 1
+    name: hf
+    temperature: 1.6
+    top_k: -1
+    top_p: 1
+    prompt_length: ${data.max_prompt_length}
+    response_length: ${data.max_response_length}
+    dtype: bfloat16
+    gpu_memory_utilization: 0.9
+    ignore_eos: False
+    enforce_eager: True
+    free_cache_engine: True
+    load_format: dummy_dtensor
+    tensor_model_parallel_size: 1
+    max_num_batched_tokens: 8192
+    max_num_seqs: 1024
+    log_prob_micro_batch_size: 32
+    log_prob_use_dynamic_bsz: ${actor_rollout_ref.actor.use_dynamic_bsz}
+    log_prob_max_token_len_per_gpu: ${actor_rollout_ref.actor.ppo_max_token_len_per_gpu}
+    do_sample: True
+    n: ${data.n_samples}
+
+critic:
+  strategy: fsdp
+  rollout_n: ${actor_rollout_ref.rollout.n}
+  optim:
+    lr: 1e-5
+    lr_warmup_steps_ratio: 0.
+    min_lr_ratio: null
+    warmup_style: constant
+    total_training_steps: -1
+  model:
+    action_token_len: ${actor_rollout_ref.model.action_token_len}
+    action_chunks_len: ${actor_rollout_ref.model.action_chunks_len}
+    path: ~/models/deepseek-llm-7b-chat
+    tokenizer_path: ${actor_rollout_ref.model.path}
+    override_config: {}
+    external_lib: ${actor_rollout_ref.model.external_lib}
+    use_remove_padding: ${actor_rollout_ref.model.use_remove_padding}
+    enable_gradient_checkpointing: ${actor_rollout_ref.model.enable_gradient_checkpointing}
+    fsdp_config:
+      param_offload: ${actor_rollout_ref.actor.fsdp_config.param_offload}
+      grad_offload: ${actor_rollout_ref.actor.fsdp_config.grad_offload}
+      optimizer_offload: ${actor_rollout_ref.actor.fsdp_config.optimizer_offload}
+      wrap_policy:
+        min_num_params: 0
+      fsdp_size: -1
+    lora_rank: 0
+    lora_alpha: 32
+    target_modules: all-linear
+    type: value
+  ppo_mini_batch_size: ${actor_rollout_ref.actor.ppo_mini_batch_size}
+  ppo_micro_batch_size: 64
+  forward_micro_batch_size: ${critic.ppo_micro_batch_size}
+  use_dynamic_bsz: ${actor_rollout_ref.actor.use_dynamic_bsz}
+  ppo_max_token_len_per_gpu: 32768
+  forward_max_token_len_per_gpu: ${critic.ppo_max_token_len_per_gpu}
+  ulysses_sequence_parallel_size: ${actor_rollout_ref.actor.ulysses_sequence_parallel_size}
+  ppo_epochs: ${actor_rollout_ref.actor.ppo_epochs}
+  shuffle: ${actor_rollout_ref.actor.shuffle}
+  grad_clip: 1.0
+  cliprange_value: 0.5
+
+verifier:
+  type: prime
+  reward_coef: 5
+
+reward_model:
+  enable: False
+  strategy: fsdp
+  model:
+    action_token_len: ${actor_rollout_ref.model.action_token_len}
+    action_chunks_len: ${actor_rollout_ref.model.action_chunks_len}
+    input_tokenizer: ${actor_rollout_ref.model.path}
+    path: ~/models/FsfairX-LLaMA3-RM-v0.1
+    external_lib: ${actor_rollout_ref.model.external_lib}
+    use_remove_padding: ${actor_rollout_ref.model.use_remove_padding}
+    fsdp_config:
+      min_num_params: 0
+      param_offload: False
+  mini_batch_size: ${actor_rollout_ref.actor.ppo_mini_batch_size}
+  micro_batch_size: 64
+  max_length: null
+  ulysses_sequence_parallel_size: ${actor_rollout_ref.actor.ulysses_sequence_parallel_size}
+  use_dynamic_bsz: false
+  ppo_max_token_len_per_gpu: ${actor_rollout_ref.actor.ppo_max_token_len_per_gpu}
+  forward_max_token_len_per_gpu: ${critic.forward_max_token_len_per_gpu}
+  rm_coef: 0
+  rm_type: prime
+  prime_granularity: token
+  prime_norm: batch_norm
+  prime_model:
+    input_tokenizer: ${actor_rollout_ref.model.path}
+    path: null
+    ref_type: freeze
+    ref_path: null
+    external_lib: ${actor_rollout_ref.model.external_lib}
+    enable_gradient_checkpointing: ${actor_rollout_ref.model.enable_gradient_checkpointing}
+    use_remove_padding: ${actor_rollout_ref.model.use_remove_padding}
+    fsdp_config:
+      wrap_policy:
+        min_num_params: 0
+      param_offload: ${actor_rollout_ref.actor.fsdp_config.param_offload}
+      grad_offload: ${actor_rollout_ref.actor.fsdp_config.grad_offload}
+      optimizer_offload: ${actor_rollout_ref.actor.fsdp_config.optimizer_offload}
+    update: none
+    optim:
+      lr: 1e-6
+      lr_warmup_steps_ratio: 0.
+      min_lr_ratio: null
+      warmup_style: constant
+      total_training_steps: -1
+      weight_decay: 0.
+      grad_clip: 1.0
+    beta_train: 0.05
+    loss_type: ce
+
+algorithm:
+  gamma: 1.0
+  lam: 1.0
+  adv_estimator: grpo
+  adv_params:
+    verifier_gamma: ${algorithm.gamma}
+    reward_model_gamma: ${algorithm.gamma}
+  kl_penalty: kl
+  kl_ctrl:
+    type: fixed
+    kl_coef: 0.00
+    horizon: 10000
+    target_kl: 0.1
+
+trainer:
+  total_epochs: 100
+  total_training_steps: null
+  project_name: cosmos-rft-mimicgen
+  experiment_name: coffee_cosmos_rft
+  logger: ['console', 'wandb']
+  wandb_mode: online
+  nnodes: 1
+  n_gpus_per_node: 8
+  save_freq: 1
+  test_freq: 1
+  critic_warmup: 0
+  default_hdfs_dir: null
+  default_local_dir: checkpoints/cosmos_rft/${trainer.experiment_name}
+  runtime_env: none
+  val_before_train: False
+  val_only: False
+  debug: False
+  rollout_before_train: False
+  val_save_rollouts: False
+  generate_rpc_chunk_size: 16
+  train_generate_rpc_chunk_size: 16
+  val_generate_rpc_chunk_size: 16
+  rollout_generate_rpc_chunk_size: 16
+  generate_rpc_min_samples_per_rank: 2
+  sim_rollout_epoch: 1
