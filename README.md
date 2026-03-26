@@ -2,7 +2,7 @@
 <div align="center">
 
 # 🤖 RoboStereo
-**Dual-Tower 4D Embodied World Models for Unified Policy Optimization**
+## **Dual-Tower 4D Embodied World Models for Unified Policy Optimization**
 
 <br>
 
