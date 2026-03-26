@@ -66,13 +66,6 @@ The current RoboStereo workflow is primarily optimized for Linux + NVIDIA GPU en
 - Python `>= 3.10` (Required only for local installation or debugging)
 - CUDA-capable GPU; dual-tower training and policy branches typically require larger VRAM.
 
-You can quickly verify your host GPU and Docker runtime using the following commands:
-
-```bash
-nvidia-smi
-sudo docker run --rm --runtime=nvidia --gpus all \
-  nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi
-```
 
 ### 2. Clone Repository
 
