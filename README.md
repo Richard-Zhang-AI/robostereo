@@ -39,8 +39,8 @@ Scalable Embodied AI faces fundamental constraints due to prohibitive costs and 
 
 ## 📢 News
 * **[2026.03.13]** 📷 Paper released on arXiv.
-* **[2026.03.25]** 🎉 Training and inference code released on GitHub.
-* **[2026.03.26]** 🚀 Pre-trained models and datasets are now available on Hugging Face!
+* **[2026.03.25]** ⚓ Training and inference code released on GitHub.
+* **[2026.03.26]** 🤗 Pre-trained models and datasets are now available on Hugging Face!
 
 ## 🔭 Repository Scope
 
@@ -111,7 +111,7 @@ sudo docker run -it \
 
 ## 🧱 Weights and Data
 
-### World-Model Checkpoints
+### World-Model Checkpoints ⍄
 
 The main repository provides a unified download script that automatically restores two directory structures: `checkpoints_files/` and `OEPL/checkpoint_files/`.
 
@@ -120,7 +120,7 @@ huggingface-cli login
 python download_hf_weights.py 
 ```
 
-### Datasets
+### Datasets ⍄
 
 We have prepared a subset of the data, which can be downloaded via Hugging Face to facilitate inference and training. The datasets should be placed under the datasets/ directory of the repository. We recommend using the following folder structure:
 
@@ -251,7 +251,7 @@ CUDA_VISIBLE_DEVICES=0 PYTHONPATH=. python cosmos_predict2/_src/predict2/action/
   --save_dir outputs/dual_infer_bridge
 ```
 
-## 🏋️ Training
+## 🎯 Training
 
 ### Released Task Configs
 
@@ -294,15 +294,15 @@ python scripts/gs_from_xyz_video.py --dataset-dir ../datasets/bridge/videos/trai
 ```
 
 
-## OEPL
+## ➾ OEPL
 
 Open-Exploration Policy Learning covers the OpenVLA-based policy optimization branch used for autonomous exploration and self-correction. See [OEPL/README.md](OEPL/README.md) for details.
 
-## IEPL
+## ➾ IEPL
 
 Imitative-Evolutionary Policy Learning covers the Cosmos-RFT post-training branch for learning from expert demonstrations with perceptual rewards. See [IEPL/README.md](IEPL/README.md) for details.
 
-## TTPA
+## ➾ TTPA
 
 Test-Time Policy Augmentation covers the pre-execution verification and synchronized inference workflow. See [TTPA/README.md](TTPA/README.md) for details.
 
