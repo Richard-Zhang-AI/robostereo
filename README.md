@@ -111,7 +111,7 @@ sudo docker run -it \
 
 ## 🧱 Weights and Data
 
-### World-Model Checkpoints ⍄
+### Checkpoints ⍄
 
 The main repository provides a unified download script that automatically restores two directory structures: `checkpoints_files/` and `OEPL/checkpoint_files/`.
 
