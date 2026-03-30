@@ -122,10 +122,11 @@ python download_hf_weights.py
 
 ### Datasets
 
-The public datasets utilized in our current workflow can be downloaded from Hugging Face and should be placed within the `datasets/` directory of the repository. We recommend adhering to the following absolute paths:
+We have prepared a subset of the data, which can be downloaded via Hugging Face to facilitate inference and training. The datasets should be placed under the datasets/ directory of the repository. We recommend using the following folder structure:
 
-- `bridge` -> `/nfs/rczhang/code/RoboStereo/datasets/bridge`
-- `train_openvla` -> `/nfs/rczhang/code/RoboStereo/datasets/train_openvla`
+
+- `bridge` -> `./datasets/bridge`
+- `train_openvla` -> `./datasets/train_openvla`
 
 Please log in to Hugging Face prior to downloading:
 
@@ -138,17 +139,17 @@ huggingface-cli login
 Source: `https://huggingface.co/datasets/Richard-ZZZZZ/bridge`
 
 ```bash
-mkdir -p /nfs/rczhang/code/RoboStereo/datasets/bridge
+mkdir -p ./datasets/bridge
 huggingface-cli download \
   --repo-type dataset \
   Richard-ZZZZZ/bridge \
-  --local-dir /nfs/rczhang/code/RoboStereo/datasets/bridge
+  --local-dir ./datasets/bridge
 ```
 
 Upon successful download, the directory structure should be as follows:
 
 ```text
-/nfs/rczhang/code/RoboStereo/datasets/bridge/
+./datasets/bridge/
 ├── annotation/
 │   ├── train/
 │   ├── val/
@@ -164,22 +165,22 @@ Upon successful download, the directory structure should be as follows:
 └── .cache/huggingface/
 ```
 
-#### 2. Download `train_openvla`
+#### 2. Download `train_openvla` (toy datasets for policy optimization)
 
 Source: `https://huggingface.co/datasets/Richard-ZZZZZ/RoboStereo-dataset`
 
 ```bash
-mkdir -p /nfs/rczhang/code/RoboStereo/datasets/train_openvla
+mkdir -p ./datasets/train_openvla
 huggingface-cli download \
   --repo-type dataset \
   Richard-ZZZZZ/RoboStereo-dataset \
-  --local-dir /nfs/rczhang/code/RoboStereo/datasets/train_openvla
+  --local-dir ./datasets/train_openvla
 ```
 
 The local directory structure should be:
 
 ```text
-/nfs/rczhang/code/RoboStereo/datasets/train_openvla/
+./datasets/train_openvla/
 ├── coffee_128/
 │   ├── annotation/
 │   │   ├── train/
